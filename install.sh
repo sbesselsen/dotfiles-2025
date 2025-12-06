@@ -5,9 +5,9 @@ if command -v brew >/dev/null 2>&1; then
 fi
 
 if command -v apk >/dev/null 2>&1; then
-    apk add bat btop curl eza fd fzf git jq pv ripgrep shellcheck starship wget
+    sudo apk add bat btop curl eza fd fzf git jq pv ripgrep shellcheck starship wget zsh
 
-    apk add \
+    sudo apk add \
     --no-cache \
     --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
     --repository http://dl-cdn.alpinelinux.org/alpine/edge/main \
