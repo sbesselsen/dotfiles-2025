@@ -1,0 +1,124 @@
+#!/usr/bin/env php
+<?php
+define('EXPIRES_IN', 24 * 3600);
+define('PROFILE', 'sb-share');
+define('S3_PATH', 's3://sb-drop-2020');
+
+set_time_limit(0);
+
+$stderr = fopen('php://stderr', 'w');
+main();
+
+function parse_time_offset($str)
+{
+    $offset = 0;
+    if (preg_match('(^([0-9]+)d(.*)$)i', $str, $match)) {
+        list(, $days, $str) = $match;
+        $offset += $days * 24 * 3600;
+    }
+    if (preg_match('(^([0-9]+)h(.*)$)i', $str, $match)) {
+        list(, $hours, $str) = $match;
+        $offset += $hours * 3600;
+    }
+    if (preg_match('(^([0-9]+)m(.*)$)i', $str, $match)) {
+        list(, $minutes, $str) = $match;
+        $offset += $minutes * 60;
+    }
+    if (preg_match('(^([0-9]+)s(.*)$)i', $str, $match)) {
+        list(, $seconds, $str) = $match;
+        $offset += $seconds;
+    }
+    if (preg_match('(^([0-9]+)$)i', $str, $match)) {
+        list(, $seconds) = $match;
+        $offset += $seconds;
+    }
+    return $offset;
+}
+
+function usage()
+{
+    global $stderr;
+    fwrite($stderr, "Usage: share [-e] PATH\n");
+    fwrite($stderr, "-e: Expiry time offset from now. Can be formatted as a number of seconds, or like this: 1d2h3m4s.\n");
+    exit(1);
+}
+
+function run_cmd($cmd, $verbose = FALSE, $buffer = FALSE, $exit_on_error = TRUE) {
+    global $stderr;
+
+    if ($verbose) {
+        echo "{$cmd}\n";
+        flush();
+    }
+    if ($buffer) {
+        ob_start();
+    }
+    $passthru_cmd = $cmd;
+    if (!$verbose) {
+        if (!$buffer) {
+            $passthru_cmd .= " > /dev/null";
+        }
+        $passthru_cmd = "sh -c " . escapeshellarg($passthru_cmd . " 2>/dev/null");
+    }
+    passthru($passthru_cmd, $return);
+    $output = NULL;
+    if ($buffer) {
+        $output = ob_get_clean();
+        if ($verbose) {
+            echo $output;
+            flush();
+        }
+    }
+    if ($return && $exit_on_error) {
+        exit($return);
+    }
+    return $output;
+}
+
+function main()
+{
+    global $stderr;
+    $options = getopt("e::v", ['profile::'], $index);
+    $profile = empty($options['profile']) ? PROFILE : $options['profile'];
+
+    // Parse expiration.
+    $expires_in = EXPIRES_IN;
+    if (!empty($options['e'])) {
+        $expires_in = parse_time_offset($options['e']);
+    }
+
+    $verbose = isset($options['v']);
+
+    $args = array_slice($_SERVER['argv'], $index);
+    if (!$args) {
+        fwrite($stderr, "No path to file provided.\n");
+        usage();
+        return;
+    }
+
+    list ($path) = $args;
+    $full_path = realpath($path);
+    if (!$full_path || !file_exists($full_path)) {
+        fwrite($stderr, "File does not exist: {$path}.\n");
+        usage();
+        return;
+    }
+
+    $target_path = S3_PATH . '/' . substr(sha1(uniqid()), 0, 20) . '/' . basename($path);
+
+    // Check if we have an active AWS SSO session under the specified profile.
+    $sso_status = run_cmd("sh -c " . escapeshellarg("aws s3 ls " . S3_PATH . "/ --profile=" . escapeshellarg($profile) . " 2>&1"), false, true, false);
+    if (strpos($sso_status, 'The SSO session associated with this profile has expired') !== FALSE) {
+        run_cmd("aws sso login --profile=" . escapeshellarg(PROFILE), $verbose);
+    }
+
+    run_cmd("aws s3 cp " . escapeshellarg($full_path) . " " . escapeshellarg($target_path) . " --profile=" . escapeshellarg(PROFILE), $verbose);
+    $url = run_cmd("aws s3 presign " . escapeshellarg($target_path) . " --profile=" . escapeshellarg(PROFILE) . " --expires-in " . escapeshellarg($expires_in), $verbose, true);
+    $url = rtrim($url);
+
+    shell_exec("echo " . escapeshellarg($url) . " | pbcopy");
+
+    exec("osascript -e " . escapeshellarg("display notification " . json_encode("URL copied to clipboard.") . " with title " .json_encode("Shared " . basename($path))));
+
+    echo $url;
+}

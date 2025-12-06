@@ -1,0 +1,27 @@
+#!/bin/bash
+HOST=${1:?Please provide a target hostname}
+PORTS=${2:?Please provide a local and remote port}
+LOCAL_PORT=$(/bin/echo -n "$PORTS" | cut -d ":" -f 1)
+REMOTE_PORT=$(/bin/echo -n "$PORTS" | cut -d ":" -f 2)
+if [ -z "$REMOTE_PORT" ]; then
+    REMOTE_PORT="$LOCAL_PORT"
+fi
+
+RANDOMID="$(cat "/dev/urandom" | head -c100 | base64 | tr -d '+/=' | tr '[:upper:]' '[:lower:]' | head -c10)"
+
+kubectl run "external-forward-tunnel-$RANDOMID" --image=alpine/socat --port="$REMOTE_PORT" tcp-listen:"$REMOTE_PORT",fork,reuseaddr tcp-connect:"$HOST":"$REMOTE_PORT" &
+KUBECTL_PID=$!
+
+trap deletePod EXIT SIGHUP
+
+deletePod() {
+    echo "Deleting pod..."
+    echo "PLEASE WAIT, WE NEED TO DELETE THIS POD NOW OR IT WILL STICK AROUND INDEFINITELY!"
+    kubectl delete pod "external-forward-tunnel-$RANDOMID"
+    wait $KUBECTL_PID
+}
+
+echo "Waiting for pod..."
+sleep 10
+kubectl wait --for=condition=ready --timeout=30s "pod/external-forward-tunnel-$RANDOMID"
+kubectl port-forward "pod/external-forward-tunnel-$RANDOMID" "$LOCAL_PORT:$REMOTE_PORT"
