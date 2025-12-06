@@ -84,3 +84,6 @@ autoload -Uz compinit && compinit
 if command -v brew >/dev/null 2>&1; then
     asdf set -u nodejs system
 fi
+
+# Make `less` handle unicode properly (for paging things with Nerd font glyphs)
+export LESSUTFCHARDEF=E000-F8FF:p,F0000-FFFFD:p,100000-10FFFD:p

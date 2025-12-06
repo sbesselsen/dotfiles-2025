@@ -5,7 +5,7 @@ if command -v brew >/dev/null 2>&1; then
 fi
 
 if command -v apk >/dev/null 2>&1; then
-    sudo apk add bat btop curl eza fd fzf git jq pv ripgrep shellcheck starship wget zsh
+    sudo apk add bat btop curl eza fd fzf git jq less pv ripgrep shellcheck starship wget zsh
 
     sudo apk add \
     --no-cache \
