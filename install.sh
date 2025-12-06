@@ -21,5 +21,7 @@ tldr --update
 DIR="$(dirname "$0")"
 DIR="$(realpath "$DIR")"
 
+mkdir -p "$HOME/.config"
+
 ln -sf "$DIR/config/starship/starship.toml" "$HOME/.config/starship.toml"
 ln -sf "$DIR/config/zsh/.zshrc" "$HOME/.zshrc"
