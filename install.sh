@@ -5,9 +5,13 @@ if command -v brew >/dev/null 2>&1; then
 fi
 
 if command -v apk >/dev/null 2>&1; then
-    sudo apk add bat btop curl eza fd fzf git jq less pv ripgrep shellcheck starship wget zsh
+    SUDO=sudo
+    if command -v doas >/dev/null 2>&1; then
+        SUDO=doas
+    fi
+    $SUDO apk add bat btop curl eza fd fzf git jq less pv ripgrep shellcheck starship wget zsh
 
-    sudo apk add \
+    $SUDO apk add \
     --no-cache \
     --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
     --repository http://dl-cdn.alpinelinux.org/alpine/edge/main \
