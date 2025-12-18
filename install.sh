@@ -29,3 +29,7 @@ mkdir -p "$HOME/.config"
 
 ln -sf "$DIR/config/starship/starship.toml" "$HOME/.config/starship.toml"
 ln -sf "$DIR/config/zsh/.zshrc" "$HOME/.zshrc"
+
+mkdir -p "$HOME/.config/btop/themes"
+ln -sf "$DIR/config/btop/catppuccin-frappe.theme" "$HOME/.config/btop/themes/catppuccin-frappe.theme"
+echo 'color_theme = "catppuccin-frappe"' >> "$HOME/.config/btop/btop.conf"
