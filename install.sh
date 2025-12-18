@@ -26,7 +26,7 @@ if command -v apt-get >/dev/null 2>&1; then
     $SUDO apt-get install -y bat btop curl eza fd-find fzf git jq less pv ripgrep shellcheck starship wget zsh
 
     if [ ! -f /usr/bin/bat ] && [ -f /usr/bin/batcat ]; then
-        ln -s /usr/bin/batcat /usr/local/bin/bat
+        $SUDO ln -s /usr/bin/batcat /usr/local/bin/bat
     fi
 fi
 
