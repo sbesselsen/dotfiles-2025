@@ -1,0 +1,20 @@
+#!/bin/sh
+# Read devcontainer template name from $1
+TEMPLATE_NAME="$1"
+
+# Validate that it has only allowed characters (alphanumeric, hyphen, underscore)
+if ! echo "$TEMPLATE_NAME" | grep -Eq '^[a-zA-Z0-9_-]+$'; then
+    echo "Error: Invalid template name. Only alphanumeric characters, hyphens, and underscores are allowed."
+    exit 1
+fi
+
+TEMPLATE_DIR="$(dirname "$0")/../devcontainer-templates/$TEMPLATE_NAME"
+
+if [ ! -d "$TEMPLATE_DIR" ]; then
+    echo "Error: Template '$TEMPLATE_NAME' does not exist."
+    exit 1
+fi
+
+# Create the new devcontainer directory under the pwd from the template
+cp -r "$TEMPLATE_DIR" "./.devcontainer"
+echo "Devcontainer initialized from template '$TEMPLATE_NAME'."
