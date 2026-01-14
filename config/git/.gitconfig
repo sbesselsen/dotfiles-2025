@@ -1,0 +1,15 @@
+[alias]
+# Some taken from: https://gist.github.com/robmiller/6018582
+lg = log --graph --date-order -C -M --pretty=format:\"%C(224) %h  %an 󰃭 %ad%C(183)%d %C(reset)%s\" --all --date=short
+open = "!f(){ gh repo view -w; }; f"
+branch-name = "!git rev-parse --abbrev-ref HEAD"
+uncommit = move-head HEAD^
+move-head = reset --soft
+publish = "!git push -u origin $(git branch-name)"
+sync = "!f() { git pull; git push; }; f"
+
+[pull]
+rebase = false
+
+[init]
+defaultBranch = main
