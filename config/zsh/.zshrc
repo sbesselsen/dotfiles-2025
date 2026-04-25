@@ -21,6 +21,9 @@ cdr() {
 # Make my own scripts accessible on the path.
 export PATH="$PATH:$HOME/.dotfiles/scripts"
 
+# Support local paths in devcontainers etc.
+export PATH="$HOME/.local/bin:$PATH"
+
 if [ -d /opt/homebrew ]; then
     # Use some tools from Homebrew instead of the system ones.
     export PATH="/opt/homebrew/opt/curl/bin:$PATH"
