@@ -16,5 +16,5 @@ if [ ! -d "$TEMPLATE_DIR" ]; then
 fi
 
 # Create the new devcontainer directory under the pwd from the template
-cp -r "$TEMPLATE_DIR" "./.devcontainer"
+cp -r "$TEMPLATE_DIR/.devcontainer" "./.devcontainer"
 echo "Devcontainer initialized from template '$TEMPLATE_NAME'."
