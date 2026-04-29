@@ -29,7 +29,7 @@ if command -v apt-get >/dev/null 2>&1; then
     $SUDO chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
 
     $SUDO apt-get update
-    $SUDO apt-get install -y bat btop curl eza fd-find fzf git jq less pv ripgrep shellcheck tldr wget zsh
+    $SUDO apt-get install -y bat btop curl eza fd-find fzf git jq less pv ripgrep shellcheck wget zsh
     $SUDO apt-get install -y tldr
     $SUDO apt-get install -y tealdeer
 
